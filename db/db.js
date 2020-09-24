@@ -4,7 +4,7 @@ const conn = mysql.createConnection({
     host: '127.0.0.1',
     user: 'root',
     password: 'admin',
-    database: 'admin'
+    database: 'shop'
 })
 
 conn.connect()
