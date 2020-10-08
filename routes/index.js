@@ -236,10 +236,47 @@ router.get('/api/user', (req, res)=>{
                message: '请先登录'
             })
          }else {
-            res.json({success_code: 200, message: {id: results[0].id, userName: results[0].userName, userPhone: results[0].userPhone}})
+            res.json({success_code: 200, message: results[0]})
          }
       }
    })
+});
+/*
+退出登录
+*/
+router.get('/api/logout', (req, res)=>{
+   delete req.session.userId
+   res.json({success_code: 200, message: '退出登录成功'})
+});
+/*
+ 修改用户信息
+*/
+router.post('/api/changeinfo', (req, res)=>{
+   let userId = req.body.userId
+   let userName = req.body.userName || ''
+   let userSex = req.body.userSex || ''
+   let userAddress = req.body.userAddress || ''
+   let userBirthday = req.body.userBirthday || ''
+   let userSign = req.body.userSign || ''
+   if(!userId) {
+      res.json({success_code: 0, message: '修改信息失败'})
+   }
+   let sqlStr = "UPDATE shopusers SET userName = ?, userSex = ?, userAddress = ?, userBirthday = ?, userSign = ? WHERE id = " + userId
+   let sqlParams = [userName, userSex, userAddress, userBirthday, userSign]
+   conn.query(sqlStr, sqlParams, (error, results, fields) => {
+      if(error) {
+         res.json({
+            error_code: 0,
+            message: '修改信息失败'
+         })
+      }else {
+         res.json({
+            success_code: 200,
+            message: '修改信息成功'
+         })
+      }
+   })
+
 });
 
 module.exports = router;
