@@ -278,5 +278,68 @@ router.post('/api/changeinfo', (req, res)=>{
    })
 
 });
+/**
+ * 添加商品到购物车
+ */
+router.post('/api/addshopcart', (req, res) => {
+    let user_id = req.body.user_id
+    if(!user_id || user_id !== req.session.userId){
+        res.json({err_code:0, message:'非法用户'})
+        return
+    }
+   let goods_id = req.body.goods_id
+   let goods_name = req.body.goods_name
+   let thumb_url = req.body.thumb_url
+   let price = req.body.price
+   let buy_count = 1
+   let is_pay = 0
+   let sql_str = "SELECT * FROM lk_pdd_cart WHERE goods_id = '" + goods_id + "' LIMIT 1"
+   conn.query(sql_str, (error, results, fields) => {
+       if (error) {
+           res.json({err_code: 0, message: '服务器内部错误'})
+       } else {
+           results = JSON.parse(JSON.stringify(results));
+           if (results[0]) {
+               console.log(results[0])
+               let buy_count = results[0].buy_count + 1
+               let sql_str = "UPDATE lk_pdd_cart SET buy_count = " + buy_count + " WHERE goods_id = '" + goods_id + "'"
+               conn.query(sql_str, (error, results, fields) => {
+                   if (error) {
+                       res.json({err_code: 0, message: '加入购物车失败'})
+                   } else {
+                       res.json({success_code: 200, message: '加入购物车成功'})
+                   }
+               })
+           } else {
+               let add_sql = "INSERT INTO lk_pdd_cart(goods_id, goods_name, thumb_url, price, buy_count, is_pay) VALUES (?, ?, ?, ?, ?, ?)"
+               let sql_params = [goods_id, goods_name, thumb_url, price, buy_count, is_pay]
+               conn.query(add_sql, sql_params, (error, results, fields) => {
+                   if (error) {
+                       res.json({err_code: 0, message: '加入购物车失败'})
+                   } else {
+                       res.json({success_code: 200, message: '加入购物车成功'})
+                   }
+               })
+           }
+       }
+   })
+});
+/**
+* 查询购物车商品
+*/
+router.get('/api/cartgoods', (req, res) => {
+   if(!req.session.userId){
+       res.json({err_code: 0, message: '请先登录'})
+       return
+   }
+   let sqlStr = "SELECT * FROM lk_pdd_cart"
+   conn.query(sqlStr, (error, results, fields) => {
+       if (error) {
+           res.json({err_code: 0, message: '请求数据失败'})
+       } else {
+           res.json({success_code: 200, message: results})
+       }
+   })
+});
 
 module.exports = router;
